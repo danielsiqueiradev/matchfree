@@ -1,8 +1,9 @@
 export const CURRENT_USER = {
   id: 'me',
-  name: 'Alex',
-  age: 25,
+  name: 'Daniel',
+  age: 38,
   gender: 'M',
+  location: 'Maricá, Rio de Janeiro',
   bio: 'Servo de Deus. Curto culto aos domingos, café com amigos e um bom louvor. Buscando alguém para caminhar junto em Cristo.',
   photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500',
 };

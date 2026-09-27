@@ -18,10 +18,12 @@ import {
   SECRET_ADMIRERS,
 } from '../data/mock';
 
-const STORAGE_KEY = '@matchfree/state/v2';
+const STORAGE_KEY = '@matchfree/state/v3';
 
 const initialState = {
   hydrated: false,
+  onboarded: false,
+  authProvider: null,
   user: CURRENT_USER,
   preferences: DEFAULT_PREFERENCES,
   deck: DECK_PROFILES,
@@ -110,6 +112,14 @@ function reducer(state, action) {
         },
       };
     }
+
+    case 'LOGIN':
+      return {
+        ...state,
+        onboarded: true,
+        authProvider: action.provider,
+        user: { ...state.user, ...(action.user || {}) },
+      };
 
     case 'UPDATE_USER':
       return { ...state, user: { ...state.user, ...action.payload } };
@@ -204,6 +214,11 @@ export function AppProvider({ children }) {
       deck: visibleDeck,
       admirers: visibleAdmirers,
       currentProfile,
+      stats: {
+        curti: state.swiped.filter((s) => s.direction === 'right').length,
+        meCurtiram: state.admirers.length + state.matches.length,
+        matches: state.matches.length,
+      },
       remaining: visibleDeck.length,
       savings: SAVINGS_BASE + state.adsWatched * SAVINGS_PER_AD,
       canRewind: state.swiped.length > 0,
@@ -215,6 +230,7 @@ export function AppProvider({ children }) {
       registerAdWatched: () => dispatch({ type: 'AD_WATCHED' }),
       spendCoin: () => dispatch({ type: 'SPEND_COIN' }),
       sendMessage,
+      login: (provider, user) => dispatch({ type: 'LOGIN', provider, user }),
       updateUser: (payload) => dispatch({ type: 'UPDATE_USER', payload }),
       updatePreferences: (payload) => dispatch({ type: 'UPDATE_PREFERENCES', payload }),
       reset: () => dispatch({ type: 'RESET' }),

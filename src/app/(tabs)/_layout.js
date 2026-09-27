@@ -1,7 +1,7 @@
-import { Tabs } from 'expo-router';
+import { Redirect, Tabs } from 'expo-router';
 import { Text, View } from 'react-native';
 import { useApp } from '../../store/AppContext';
-import { colors } from '../../theme';
+import { light } from '../../theme';
 
 function TabIcon({ emoji, color, focused }) {
   return (
@@ -17,7 +17,7 @@ function Badge({ count }) {
         position: 'absolute',
         top: -4,
         right: -10,
-        backgroundColor: colors.primary,
+        backgroundColor: light.accent,
         borderRadius: 9,
         minWidth: 18,
         height: 18,
@@ -32,29 +32,31 @@ function Badge({ count }) {
 }
 
 export default function TabsLayout() {
-  const { admirers, admirersUnlocked, matches } = useApp();
+  const { admirers, admirersUnlocked, matches, onboarded } = useApp();
+
+  if (!onboarded) return <Redirect href="/welcome" />;
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: colors.card,
-          borderTopColor: colors.border,
+          backgroundColor: '#FFFFFF',
+          borderTopColor: light.border,
           height: 64,
           paddingBottom: 8,
           paddingTop: 8,
         },
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textMuted,
+        tabBarActiveTintColor: light.accent,
+        tabBarInactiveTintColor: light.textMuted,
         tabBarLabelStyle: { fontSize: 11, fontWeight: '700' },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Descobrir',
-          tabBarIcon: (props) => <TabIcon emoji="🔥" {...props} />,
+          title: 'Principal',
+          tabBarIcon: (props) => <TabIcon emoji="❤️" {...props} />,
         }}
       />
       <Tabs.Screen
@@ -72,7 +74,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="chats"
         options={{
-          title: 'Conversas',
+          title: 'Contatos',
           tabBarIcon: (props) => (
             <View>
               <TabIcon emoji="💬" {...props} />
@@ -84,8 +86,8 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Perfil',
-          tabBarIcon: (props) => <TabIcon emoji="👤" {...props} />,
+          title: 'Opções',
+          tabBarIcon: (props) => <TabIcon emoji="⚙️" {...props} />,
         }}
       />
     </Tabs>
