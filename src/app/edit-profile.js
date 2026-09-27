@@ -300,6 +300,12 @@ function GeneralDataSection({ app }) {
         onChangeText={(hobbies) => app.updateUser({ hobbies })}
         placeholder="Ex.: Leitura, Música"
       />
+      <Select
+        label="Linguagem do Amor"
+        value={u.loveLanguage}
+        options={FIELD_OPTIONS.loveLanguage}
+        onSelect={(loveLanguage) => app.updateUser({ loveLanguage })}
+      />
     </Section>
   );
 }

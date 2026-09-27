@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { Image, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useApp } from '../../store/AppContext';
 import { light, radius, spacing } from '../../theme';
@@ -39,15 +39,6 @@ function GenderSwitch({ showMen, showWomen, onSelect }) {
   );
 }
 
-function Stat({ label, value }) {
-  return (
-    <View style={styles.stat}>
-      <Text style={styles.statLabel}>{label}</Text>
-      <Text style={styles.statValue}>{value}</Text>
-    </View>
-  );
-}
-
 export default function OptionsScreen() {
   const app = useApp();
 
@@ -78,59 +69,6 @@ export default function OptionsScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.profileWrap}>
-          <View style={[styles.card, styles.profileCard]}>
-            {!!app.user.coverPhoto && (
-              <Image source={{ uri: app.user.coverPhoto }} style={styles.cover} />
-            )}
-            <View style={{ height: 60 }} />
-            <Text style={styles.name}>
-              {app.user.name}, {app.user.age}
-            </Text>
-            <Text style={styles.location}>📍 {app.user.location}</Text>
-            {(app.user.church || app.user.verse || app.user.ministry) && (
-              <Text style={styles.churchLine}>
-                ⛪ {app.user.church}
-                {app.user.ministry ? ` · 🙌 ${app.user.ministry}` : ''}
-                {app.user.verse ? ` · 📖 ${app.user.verse}` : ''}
-              </Text>
-            )}
-
-            <View style={styles.divider} />
-            <View style={styles.statsRow}>
-              <Stat label="Curti" value={app.stats.curti} />
-              <Stat label="Me Curtiram" value={app.stats.meCurtiram} />
-              <Stat label="Matches" value={app.stats.matches} />
-            </View>
-            <View style={styles.divider} />
-            <Pressable onPress={() => router.push('/menu/credits')}>
-              <Text style={styles.moreStats}>Ver Mais Estatísticas</Text>
-            </Pressable>
-
-            {(app.user.photos || []).length > 0 && (
-              <>
-                <View style={styles.divider} />
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.galleryRow}
-                >
-                  {app.user.photos.map((uri, index) => (
-                    <Image key={`${uri}-${index}`} source={{ uri }} style={styles.galleryThumb} />
-                  ))}
-                </ScrollView>
-              </>
-            )}
-          </View>
-
-          <View style={styles.avatarWrap}>
-            <Image source={{ uri: app.user.photo }} style={styles.avatar} />
-            <Pressable style={styles.editBadge} onPress={() => router.push('/edit-profile')}>
-              <Text style={styles.editBadgeText}>✏️</Text>
-            </Pressable>
-          </View>
-        </View>
-
         <Text style={styles.sectionLabel}>Quero conhecer</Text>
         <View style={[styles.card, styles.segmentedCard]}>
           <GenderSwitch
@@ -204,10 +142,6 @@ export default function OptionsScreen() {
           ))}
         </View>
 
-        <Pressable style={styles.editProfileBtn} onPress={() => router.push('/edit-profile')}>
-          <Text style={styles.editProfileBtnText}>✏️ EDITAR MEU PERFIL</Text>
-        </Pressable>
-
         <Pressable style={styles.logoutBtn} onPress={app.logout}>
           <Text style={styles.logoutText}>Sair</Text>
         </Pressable>
@@ -219,7 +153,6 @@ export default function OptionsScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: light.bg },
   content: { padding: spacing(2), paddingTop: 0 },
-  profileWrap: { marginTop: 70 },
   card: {
     backgroundColor: light.card,
     borderRadius: radius.md,
@@ -230,54 +163,11 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     elevation: 3,
   },
-  cover: {
-    width: '100%',
-    height: 130,
-    borderTopLeftRadius: radius.md,
-    borderTopRightRadius: radius.md,
-  },
-  galleryRow: { paddingHorizontal: spacing(2), paddingBottom: spacing(1), gap: spacing(1) },
-  galleryThumb: { width: 62, height: 62, borderRadius: radius.sm },
-  profileCard: { paddingVertical: 0, overflow: 'hidden', paddingBottom: spacing(1.5) },
-  avatarWrap: {
-    position: 'absolute',
-    top: 75,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-  },
-  avatar: {
-    width: 110,
-    height: 110,
-    borderRadius: 55,
-    borderWidth: 4,
-    borderColor: light.card,
-  },
-  editBadge: {
-    position: 'absolute',
-    bottom: 2,
-    right: '34%',
-    backgroundColor: light.card,
-    borderRadius: 14,
-    width: 28,
-    height: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  editBadgeText: { fontSize: 13 },
-  name: { color: light.text, fontSize: 22, fontWeight: '900', textAlign: 'center' },
-  location: { color: light.textMuted, textAlign: 'center', marginTop: 2, fontSize: 13 },
-  divider: { height: 1, backgroundColor: light.border, marginVertical: spacing(1.5) },
-  churchLine: { color: light.textMuted, textAlign: 'center', marginTop: 6, fontSize: 12 },
   sectionLabel: {
     color: light.text,
     fontWeight: '900',
     fontSize: 14,
-    marginTop: spacing(3),
+    marginTop: spacing(1),
     marginBottom: spacing(1),
   },
   segmentedCard: { padding: 6 },
@@ -286,14 +176,6 @@ const styles = StyleSheet.create({
   segmentActive: { backgroundColor: light.accent },
   segmentText: { color: light.textMuted, fontWeight: '800', fontSize: 14 },
   segmentTextActive: { color: '#fff' },
-  editProfileBtn: {
-    marginTop: spacing(3),
-    backgroundColor: light.accent,
-    borderRadius: radius.lg,
-    paddingVertical: 15,
-    alignItems: 'center',
-  },
-  editProfileBtnText: { color: '#fff', fontWeight: '900' },
   logoutBtn: { alignItems: 'center', marginTop: spacing(2.5), paddingBottom: spacing(3) },
   logoutText: {
     color: light.textMuted,
@@ -321,16 +203,6 @@ const styles = StyleSheet.create({
   },
   stepBtnText: { color: light.text, fontSize: 16, fontWeight: '900' },
   stepperValue: { color: light.text, fontWeight: '800', minWidth: 58, textAlign: 'center' },
-  statsRow: { flexDirection: 'row' },
-  stat: { flex: 1, alignItems: 'center' },
-  statLabel: { color: light.textMuted, fontSize: 13 },
-  statValue: { color: light.accent, fontSize: 22, fontWeight: '900', marginTop: 2 },
-  moreStats: {
-    color: light.accent,
-    textAlign: 'center',
-    fontWeight: '700',
-    paddingVertical: 10,
-  },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',

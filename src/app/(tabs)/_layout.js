@@ -53,13 +53,6 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Principal',
-          tabBarIcon: (props) => <TabIcon emoji="❤️" {...props} />,
-        }}
-      />
-      <Tabs.Screen
         name="likes"
         options={{
           title: 'Quem te curtiu',
@@ -81,6 +74,20 @@ export default function TabsLayout() {
               <Badge count={matches.length} />
             </View>
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: 'Encontre pessoas',
+          tabBarIcon: (props) => <TabIcon emoji="❤️" {...props} />,
+        }}
+      />
+      <Tabs.Screen
+        name="meu-perfil"
+        options={{
+          title: 'Meu Perfil',
+          tabBarIcon: (props) => <TabIcon emoji="👤" {...props} />,
         }}
       />
       <Tabs.Screen
