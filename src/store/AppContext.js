@@ -15,10 +15,11 @@ import {
   repliesFor,
   SAVINGS_BASE,
   SAVINGS_PER_AD,
+  EXPLORE_FILTERS,
   SECRET_ADMIRERS,
 } from '../data/mock';
 
-const STORAGE_KEY = '@matchfree/state/v6';
+const STORAGE_KEY = '@matchfree/state/v7';
 
 const initialState = {
   hydrated: false,
@@ -39,6 +40,7 @@ const initialState = {
   gpsEnabled: false, // filtro de pessoas próximas
   gpsLocation: null, // { lat, lon } detectado ou simulado
   gpsLabel: null,
+  exploreFilter: null, // chave de EXPLORE_FILTERS ativa na Descoberta
 };
 
 function reducer(state, action) {
@@ -147,6 +149,9 @@ function reducer(state, action) {
     case 'GPS_DISABLE':
       return { ...state, gpsEnabled: false };
 
+    case 'EXPLORE_FILTER':
+      return { ...state, exploreFilter: action.filter };
+
     case 'UPDATE_PREFERENCES':
       return { ...state, preferences: { ...state.preferences, ...action.payload } };
 
@@ -227,20 +232,25 @@ export function AppProvider({ children }) {
     const swipedIds = new Set(state.swiped.map((s) => s.profileId));
     const matchedIds = new Set(state.matches.map((m) => m.profile.id));
     const nearEnough = (p) => !state.gpsEnabled || p.distance <= state.preferences.maxDistance;
-    const visibleDeck = state.deck.filter(
+    const deckPool = state.deck.filter(
       (p) =>
         !swipedIds.has(p.id) &&
         !matchedIds.has(p.id) &&
         genderAllowed(p, state.preferences) &&
         nearEnough(p)
     );
+    const ctx = { user: state.user, seeking: state.user.seeking || {} };
+    const explore = EXPLORE_FILTERS.find((f) => f.key === state.exploreFilter);
+    const matchesExplore = (p) => !explore || explore.test(p, ctx);
+    const visibleDeck = deckPool.filter(matchesExplore);
     const visibleAdmirers = state.admirers.filter(
-      (p) => genderAllowed(p, state.preferences) && nearEnough(p)
+      (p) => genderAllowed(p, state.preferences) && nearEnough(p) && matchesExplore(p)
     );
     const currentProfile = visibleDeck[0] || null;
     return {
       ...state,
       deck: visibleDeck,
+      deckPool, // baralho antes do filtro Explore (contagem dos cards)
       admirers: visibleAdmirers,
       currentProfile,
       stats: {
@@ -266,6 +276,7 @@ export function AppProvider({ children }) {
       updatePreferences: (payload) => dispatch({ type: 'UPDATE_PREFERENCES', payload }),
       enableGps: (location, label) => dispatch({ type: 'GPS_ENABLE', location, label }),
       disableGps: () => dispatch({ type: 'GPS_DISABLE' }),
+      setExploreFilter: (filter) => dispatch({ type: 'EXPLORE_FILTER', filter }),
       reset: () => dispatch({ type: 'RESET' }),
     };
   }, [state, sendMessage]);

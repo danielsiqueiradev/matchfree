@@ -1,12 +1,28 @@
 import { router } from 'expo-router';
 import { useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MatchModal from '../../components/MatchModal';
 import { useRewardedAd } from '../../components/RewardedAdProvider';
 import SwipeDeck from '../../components/SwipeDeck';
+import { EXPLORE_FILTERS } from '../../data/mock';
 import { useApp } from '../../store/AppContext';
 import { colors, radius, spacing } from '../../theme';
+
+function ExploreTile({ filter, count, active, onToggle }) {
+  return (
+    <Pressable
+      style={[styles.tile, !active && styles.tileInactive, active && styles.tileActive]}
+      onPress={onToggle}
+      accessibilityLabel={filter.label}
+      accessibilityState={{ selected: active }}
+    >
+      <Text style={styles.tileIcon}>{filter.icon}</Text>
+      <Text style={styles.tileLabel}>{filter.label}</Text>
+      <Text style={styles.tileCount}>{count} {count === 1 ? 'pessoa' : 'pessoas'}</Text>
+    </Pressable>
+  );
+}
 
 export default function DiscoverScreen() {
   const app = useApp();
@@ -14,6 +30,9 @@ export default function DiscoverScreen() {
   const deckRef = useRef(null);
   const [matched, setMatched] = useState(null);
   const [photoHintDismissed, setPhotoHintDismissed] = useState(false);
+
+  const ctx = { user: app.user, seeking: app.user.seeking || {} };
+  const tiles = EXPLORE_FILTERS.filter((f) => !f.visible || f.visible(ctx));
 
   const handleSwipe = (profile, direction) => {
     app.swipe(profile, direction);
@@ -61,6 +80,29 @@ export default function DiscoverScreen() {
             </View>
           )}
         </View>
+      </View>
+
+      <View>
+        <Text style={styles.exploreTitle}>
+          Conheça pessoas que têm a mesma intenção que você
+        </Text>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.exploreRow}
+        >
+          {tiles.map((f) => (
+            <ExploreTile
+              key={f.key}
+              filter={f}
+              count={app.deckPool.filter((p) => f.test(p, ctx)).length}
+              active={app.exploreFilter === f.key}
+              onToggle={() =>
+                app.setExploreFilter(app.exploreFilter === f.key ? null : f.key)
+              }
+            />
+          ))}
+        </ScrollView>
       </View>
 
       {!(app.user.photos || []).length && !photoHintDismissed && (
@@ -184,6 +226,30 @@ const styles = StyleSheet.create({
   },
   photoHintBtnText: { color: '#fff', fontWeight: '800', fontSize: 12 },
   photoHintClose: { color: colors.textMuted, fontSize: 14, padding: 4 },
+  exploreTitle: {
+    color: colors.textMuted,
+    fontSize: 11,
+    fontWeight: '700',
+    marginHorizontal: spacing(2),
+    marginBottom: 6,
+  },
+  exploreRow: { paddingHorizontal: spacing(2), gap: 8, paddingBottom: spacing(1) },
+  tile: {
+    width: 118,
+    height: 150,
+    borderRadius: radius.md,
+    backgroundColor: colors.cardAlt,
+    borderWidth: 2,
+    borderColor: 'transparent',
+    padding: spacing(1.5),
+    justifyContent: 'flex-end',
+    overflow: 'hidden',
+  },
+  tileInactive: { opacity: 0.55 },
+  tileActive: { borderColor: colors.accent },
+  tileIcon: { position: 'absolute', top: spacing(1.5), left: spacing(1.5), fontSize: 24 },
+  tileLabel: { color: colors.text, fontWeight: '800', fontSize: 13 },
+  tileCount: { color: colors.textMuted, fontSize: 11, marginTop: 2 },
   hint: { color: colors.textMuted, textAlign: 'center', fontSize: 12, marginBottom: spacing(1) },
   actions: {
     flexDirection: 'row',
