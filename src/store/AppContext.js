@@ -50,6 +50,10 @@ function reducer(state, action) {
       return {
         ...state,
         ...action.payload,
+        // Deck e admiradores sempre vêm dos mocks atuais — perfis são conteúdo
+        // do app, não estado do usuário.
+        deck: DECK_PROFILES,
+        admirers: SECRET_ADMIRERS,
         preferences: { ...DEFAULT_PREFERENCES, ...(action.payload.preferences || {}) },
         hydrated: true,
       };
