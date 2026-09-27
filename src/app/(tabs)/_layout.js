@@ -32,7 +32,7 @@ function Badge({ count }) {
 }
 
 export default function TabsLayout() {
-  const { admirers, admirersUnlocked, matches, onboarded } = useApp();
+  const { lockedAdmirerCount, matches, onboarded } = useApp();
 
   if (!onboarded) return <Redirect href="/welcome" />;
 
@@ -59,7 +59,7 @@ export default function TabsLayout() {
           tabBarIcon: (props) => (
             <View>
               <TabIcon emoji="💘" {...props} />
-              <Badge count={admirersUnlocked ? 0 : admirers.length} />
+              <Badge count={lockedAdmirerCount} />
             </View>
           ),
         }}

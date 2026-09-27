@@ -12,14 +12,15 @@ export default function LikesScreen() {
   const app = useApp();
   const { showRewardedAd } = useRewardedAd();
   const [matched, setMatched] = useState(null);
-  const locked = !app.admirersUnlocked;
+  const unlocked = new Set(app.unlockedAdmirerIds);
+  const lockedCount = app.lockedAdmirerCount;
 
   const handleUnlock = async () => {
     const ok = await showRewardedAd({
       title: 'Ver quem te curtiu',
-      reward: `Revelar ${app.admirers.length} perfis que te curtiram`,
+      reward: 'Revelar 1 pessoa que te curtiu',
     });
-    if (ok) app.unlockAdmirers();
+    if (ok) app.unlockRandomAdmirer();
   };
 
   const handleLike = (profile) => {
@@ -36,16 +37,19 @@ export default function LikesScreen() {
         </Text>
       </View>
 
-      {locked && app.admirers.length > 0 && (
+      {lockedCount > 0 && (
         <View style={styles.banner}>
           <Text style={styles.bannerTitle}>
-            {app.admirers.length} pessoas te curtiram! 🔥
+            {lockedCount} {lockedCount === 1 ? 'pessoa te curtiu' : 'pessoas te curtiram'}! 🔥
           </Text>
           <Text style={styles.bannerText}>
-            Assista a um vídeo curto de 15s para ver quem é, de graça.
+            Assista a um vídeo curto de 15s para revelar 1 pessoa por vez, de graça.
+            {app.vip ? ' VIP: revela na hora, sem anúncio.' : ''}
           </Text>
           <Pressable style={styles.cta} onPress={handleUnlock}>
-            <Text style={styles.ctaText}>DESBLOQUEAR VER QUEM CURTIU 🔥</Text>
+            <Text style={styles.ctaText}>
+              {app.vip ? 'REVELAR 1 CURTIDA (VIP) 👑' : 'REVELAR 1 CURTIDA 🔥'}
+            </Text>
           </Pressable>
         </View>
       )}
@@ -54,34 +58,43 @@ export default function LikesScreen() {
         {app.admirers.length === 0 && (
           <Text style={styles.empty}>Nenhuma curtida nova por enquanto. Volte mais tarde!</Text>
         )}
-        {app.admirers.map((profile) => (
-          <View key={profile.id} style={styles.cell}>
-            <Image
-              source={{ uri: profile.photo }}
-              style={styles.photo}
-              blurRadius={locked ? 28 : 0}
-            />
-            {locked && (
-              <BlurView intensity={70} tint="dark" style={StyleSheet.absoluteFill}>
-                <View style={styles.lockOverlay}>
-                  <Text style={styles.lockEmoji}>🔒</Text>
-                  <Text style={styles.lockText}>Bloqueado</Text>
-                </View>
-              </BlurView>
-            )}
-            <View style={styles.cellInfo}>
-              <Text style={styles.cellName}>
-                {locked ? '••••••, ••' : `${profile.name}, ${profile.age}`}
-              </Text>
-              {!locked && <Text style={styles.cellBio} numberOfLines={2}>{profile.bio}</Text>}
-            </View>
-            {!locked && (
-              <Pressable style={styles.likeBtn} onPress={() => handleLike(profile)}>
-                <Text style={styles.likeBtnText}>💚 CURTIR DE VOLTA</Text>
-              </Pressable>
-            )}
-          </View>
-        ))}
+        {app.admirers.map((profile) => {
+          const isLocked = !unlocked.has(profile.id);
+          return (
+            <Pressable
+              key={profile.id}
+              style={styles.cell}
+              onPress={isLocked ? handleUnlock : undefined}
+            >
+              <Image
+                source={{ uri: profile.photo }}
+                style={styles.photo}
+                blurRadius={isLocked ? 28 : 0}
+              />
+              {isLocked && (
+                <BlurView intensity={70} tint="dark" style={StyleSheet.absoluteFill}>
+                  <View style={styles.lockOverlay}>
+                    <Text style={styles.lockEmoji}>🔒</Text>
+                    <Text style={styles.lockText}>Toque p/ revelar</Text>
+                  </View>
+                </BlurView>
+              )}
+              <View style={styles.cellInfo}>
+                <Text style={styles.cellName}>
+                  {isLocked ? '••••••, ••' : `${profile.name}, ${profile.age}`}
+                </Text>
+                {!isLocked && (
+                  <Text style={styles.cellBio} numberOfLines={2}>{profile.bio}</Text>
+                )}
+              </View>
+              {!isLocked && (
+                <Pressable style={styles.likeBtn} onPress={() => handleLike(profile)}>
+                  <Text style={styles.likeBtnText}>💚 CURTIR DE VOLTA</Text>
+                </Pressable>
+              )}
+            </Pressable>
+          );
+        })}
       </ScrollView>
 
       <MatchModal

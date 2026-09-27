@@ -497,7 +497,7 @@ export const GENERATED_PROFILES = Array.from({ length: GENERATED_COUNT }, (_, i)
     loveLanguage: FIELD_OPTIONS.loveLanguage[i % FIELD_OPTIONS.loveLanguage.length],
     tags,
     bio: `${PROFESSIONS[i % PROFESSIONS.length]}. ${FAITH_LINES[i % FAITH_LINES.length]} ${HOBBY_LINES[i % HOBBY_LINES.length]}`,
-    photo: `https://i.pravatar.cc/500?img=${((i * 3) % 70) + 1}`,
+    photo: `https://randomuser.me/api/portraits/${female ? 'women' : 'men'}/${i % 99}.jpg`,
     likesMe: i % 3 === 0,
     replies: [REPLY_POOL[i % REPLY_POOL.length], REPLY_POOL[(i + 4) % REPLY_POOL.length], REPLY_POOL[(i + 7) % REPLY_POOL.length]],
   };

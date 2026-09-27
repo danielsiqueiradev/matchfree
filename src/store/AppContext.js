@@ -19,7 +19,7 @@ import {
   SECRET_ADMIRERS,
 } from '../data/mock';
 
-const STORAGE_KEY = '@matchfree/state/v7';
+const STORAGE_KEY = '@matchfree/state/v8';
 
 const initialState = {
   hydrated: false,
@@ -28,11 +28,10 @@ const initialState = {
   user: CURRENT_USER,
   preferences: DEFAULT_PREFERENCES,
   deck: DECK_PROFILES,
-  admirers: SECRET_ADMIRERS,
   swiped: [], // [{ profileId, direction }] — ordem define o Rewind
   matches: [], // [{ id, profile, createdAt }]
   messages: {}, // { [matchId]: [{ id, text, author, createdAt }] }
-  admirersUnlocked: false,
+  unlockedAdmirerIds: [], // ids revelados um a um por anúncio (ou VIP)
   adCoins: 0,
   adsWatched: 0,
   boostRank: null, // posição no ranking de destaque
@@ -53,7 +52,6 @@ function reducer(state, action) {
         // Deck e admiradores sempre vêm dos mocks atuais — perfis são conteúdo
         // do app, não estado do usuário.
         deck: DECK_PROFILES,
-        admirers: SECRET_ADMIRERS,
         preferences: { ...DEFAULT_PREFERENCES, ...(action.payload.preferences || {}) },
         hydrated: true,
       };
@@ -74,7 +72,6 @@ function reducer(state, action) {
       return {
         ...state,
         ...addMatch(state, profile),
-        admirers: state.admirers.filter((p) => p.id !== profile.id),
       };
     }
 
@@ -92,8 +89,12 @@ function reducer(state, action) {
       };
     }
 
-    case 'UNLOCK_ADMIRERS':
-      return { ...state, admirersUnlocked: true };
+    case 'UNLOCK_ADMIRER':
+      if (state.unlockedAdmirerIds.includes(action.profileId)) return state;
+      return {
+        ...state,
+        unlockedAdmirerIds: [...state.unlockedAdmirerIds, action.profileId],
+      };
 
     case 'BOOST':
       return {
@@ -251,19 +252,30 @@ export function AppProvider({ children }) {
     const explore = EXPLORE_FILTERS.find((f) => f.key === state.exploreFilter);
     const matchesExplore = (p) => !explore || explore.test(p, ctx);
     const visibleDeck = deckPool.filter(matchesExplore);
-    const visibleAdmirers = state.admirers.filter(
-      (p) => genderAllowed(p, state.preferences) && nearEnough(p) && matchesExplore(p)
+    // Todos que curtiram o usuário: admiradores fixos + perfis do baralho com
+    // likesMe, menos os que já viraram match.
+    const likers = [...SECRET_ADMIRERS, ...state.deck.filter((p) => p.likesMe)];
+    const visibleAdmirers = likers.filter(
+      (p) =>
+        !matchedIds.has(p.id) &&
+        genderAllowed(p, state.preferences) &&
+        nearEnough(p) &&
+        matchesExplore(p)
     );
+    const lockedAdmirerIds = visibleAdmirers
+      .filter((p) => !state.unlockedAdmirerIds.includes(p.id))
+      .map((p) => p.id);
     const currentProfile = visibleDeck[0] || null;
     return {
       ...state,
       deck: visibleDeck,
       deckPool, // baralho antes do filtro Explore (contagem dos cards)
       admirers: visibleAdmirers,
+      lockedAdmirerCount: lockedAdmirerIds.length,
       currentProfile,
       stats: {
         curti: state.swiped.filter((s) => s.direction === 'right').length,
-        meCurtiram: state.admirers.length + state.matches.length,
+        meCurtiram: likers.length,
         matches: state.matches.length,
       },
       remaining: visibleDeck.length,
@@ -271,7 +283,12 @@ export function AppProvider({ children }) {
       canRewind: state.swiped.length > 0,
       swipe: (profile, direction) => dispatch({ type: 'SWIPE', profile, direction }),
       rewind: () => dispatch({ type: 'REWIND' }),
-      unlockAdmirers: () => dispatch({ type: 'UNLOCK_ADMIRERS' }),
+      // Revela 1 admirador aleatório por anúncio assistido (ou 1 por toque no VIP).
+      unlockRandomAdmirer: () => {
+        if (lockedAdmirerIds.length === 0) return;
+        const id = lockedAdmirerIds[Math.floor(Math.random() * lockedAdmirerIds.length)];
+        dispatch({ type: 'UNLOCK_ADMIRER', profileId: id });
+      },
       likeAdmirer: (profile) => dispatch({ type: 'LIKE_ADMIRER', profile }),
       boost: () => dispatch({ type: 'BOOST' }),
       registerAdWatched: () => dispatch({ type: 'AD_WATCHED' }),
