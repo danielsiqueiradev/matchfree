@@ -6,6 +6,7 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   View,
@@ -120,6 +121,33 @@ export default function ProfileScreen() {
             max={80}
             onChange={(age) => app.updateUser({ age })}
           />
+        </View>
+
+        <Text style={styles.section}>Quero conhecer</Text>
+        <View style={styles.card}>
+          <View style={styles.switchRow}>
+            <Text style={styles.switchLabel}>👨 Homens</Text>
+            <Switch
+              value={app.preferences.showMen}
+              onValueChange={(showMen) => app.updatePreferences({ showMen })}
+              trackColor={{ false: colors.cardAlt, true: colors.primary }}
+              thumbColor="#fff"
+            />
+          </View>
+          <View style={styles.switchRow}>
+            <Text style={styles.switchLabel}>👩 Mulheres</Text>
+            <Switch
+              value={app.preferences.showWomen}
+              onValueChange={(showWomen) => app.updatePreferences({ showWomen })}
+              trackColor={{ false: colors.cardAlt, true: colors.primary }}
+              thumbColor="#fff"
+            />
+          </View>
+          {!app.preferences.showMen && !app.preferences.showWomen && (
+            <Text style={styles.switchWarn}>
+              Ative pelo menos uma opção para ver perfis na Descoberta.
+            </Text>
+          )}
         </View>
 
         <Text style={styles.section}>Preferências de busca</Text>
@@ -261,6 +289,14 @@ const styles = StyleSheet.create({
     marginTop: spacing(3),
   },
   boostText: { color: '#1A1300', fontWeight: '900' },
+  switchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 6,
+  },
+  switchLabel: { color: colors.text, fontWeight: '700', fontSize: 15 },
+  switchWarn: { color: colors.accent, fontSize: 12, marginTop: 8 },
   resetBtn: { alignItems: 'center', marginTop: spacing(2) },
   resetText: { color: colors.textMuted, fontSize: 12, textDecorationLine: 'underline' },
 });

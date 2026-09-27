@@ -43,7 +43,7 @@ export default function DiscoverScreen() {
           <Text style={styles.logo}>
             Match<Text style={{ color: colors.text }}>Free</Text>
           </Text>
-          <Text style={styles.tagline}>100% grátis · pago com anúncios</Text>
+          <Text style={styles.tagline}>100% grátis · amor com propósito 🙏</Text>
         </View>
         <View style={styles.counters}>
           <View style={styles.pill}>
@@ -61,7 +61,7 @@ export default function DiscoverScreen() {
         <SwipeDeck
           ref={deckRef}
           profiles={app.deck}
-          cursor={app.cursor}
+          cursor={0}
           onSwipe={handleSwipe}
         />
       </View>

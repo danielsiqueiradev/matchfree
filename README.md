@@ -1,8 +1,10 @@
 # MatchFree 💚
 
-MVP de um app de relacionamento estilo Tinder **100% gratuito**: todos os recursos "premium"
-(ver quem te curtiu, rewind e boost) são liberados assistindo a um **anúncio recompensado
-simulado de 15 segundos** — nunca com dinheiro.
+MVP de um app de relacionamento **cristão** estilo Tinder, **100% gratuito**: todos os recursos
+"premium" (ver quem te curtiu, rewind e boost) são liberados assistindo a um **anúncio recompensado
+simulado de 15 segundos** — nunca com dinheiro. Temática voltada a relacionamentos nos
+preceitos bíblicos: bios dos perfis, respostas automáticas do chat e textos refletem isso.
+Preferências permitem ligar/desligar a exibição de perfis de homens e de mulheres.
 
 Stack: **React Native + Expo (SDK 57) + Expo Router**. Arquitetura **100% offline**: nenhum
 servidor, todos os dados (perfis, matches, mensagens, preferências, contadores) ficam em

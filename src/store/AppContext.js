@@ -1,15 +1,24 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { createContext, useCallback, useContext, useEffect, useMemo, useReducer } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+} from 'react';
 import {
   CURRENT_USER,
   DECK_PROFILES,
   DEFAULT_PREFERENCES,
+  repliesFor,
   SAVINGS_BASE,
   SAVINGS_PER_AD,
   SECRET_ADMIRERS,
 } from '../data/mock';
 
-const STORAGE_KEY = '@matchfree/state/v1';
+const STORAGE_KEY = '@matchfree/state/v2';
 
 const initialState = {
   hydrated: false,
@@ -17,8 +26,7 @@ const initialState = {
   preferences: DEFAULT_PREFERENCES,
   deck: DECK_PROFILES,
   admirers: SECRET_ADMIRERS,
-  cursor: 0, // índice do card visível no baralho
-  history: [], // [{ cursor, profileId, action }]
+  swiped: [], // [{ profileId, direction }] — ordem define o Rewind
   matches: [], // [{ id, profile, createdAt }]
   messages: {}, // { [matchId]: [{ id, text, author, createdAt }] }
   admirersUnlocked: false,
@@ -28,26 +36,20 @@ const initialState = {
   boostExpiresAt: null,
 };
 
-const AUTO_REPLIES = [
-  'Oii! Tudo bem? 😄',
-  'Adorei teu perfil, sério!',
-  'Bora marcar alguma coisa esse fim de semana?',
-  'Kkkk boa! Conta mais.',
-  'Também curto isso demais 🔥',
-];
-
 function reducer(state, action) {
   switch (action.type) {
     case 'HYDRATE':
-      return { ...state, ...action.payload, hydrated: true };
+      return {
+        ...state,
+        ...action.payload,
+        preferences: { ...DEFAULT_PREFERENCES, ...(action.payload.preferences || {}) },
+        hydrated: true,
+      };
 
     case 'SWIPE': {
       const { profile, direction } = action;
-      const history = [
-        ...state.history,
-        { cursor: state.cursor, profileId: profile.id, action: direction },
-      ];
-      const next = { ...state, cursor: state.cursor + 1, history };
+      const swiped = [...state.swiped, { profileId: profile.id, direction }];
+      const next = { ...state, swiped };
       if (direction === 'right' && profile.likesMe) {
         return { ...next, ...addMatch(state, profile) };
       }
@@ -65,15 +67,14 @@ function reducer(state, action) {
     }
 
     case 'REWIND': {
-      if (state.history.length === 0) return state;
-      const last = state.history[state.history.length - 1];
+      if (state.swiped.length === 0) return state;
+      const last = state.swiped[state.swiped.length - 1];
       const matches = state.matches.filter((m) => m.profile.id !== last.profileId);
       const messages = { ...state.messages };
       delete messages[last.profileId];
       return {
         ...state,
-        cursor: last.cursor,
-        history: state.history.slice(0, -1),
+        swiped: state.swiped.slice(0, -1),
         matches,
         messages,
       };
@@ -134,7 +135,7 @@ function addMatch(state, profile) {
       [profile.id]: [
         {
           id: `${Date.now()}-them`,
-          text: `Oi ${state.user.name}! Curti muito o seu perfil 😊`,
+          text: `Paz do Senhor, ${state.user.name}! Que alegria dar match contigo 🙌`,
           author: 'them',
           createdAt: Date.now(),
         },
@@ -145,8 +146,18 @@ function addMatch(state, profile) {
 
 const AppContext = createContext(null);
 
+function genderAllowed(profile, preferences) {
+  if (profile.gender === 'M') return preferences.showMen;
+  if (profile.gender === 'F') return preferences.showWomen;
+  return true;
+}
+
 export function AppProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const stateRef = useRef(state);
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
 
   useEffect(() => {
     let active = true;
@@ -169,20 +180,33 @@ export function AppProvider({ children }) {
 
   const sendMessage = useCallback((matchId, text) => {
     dispatch({ type: 'SEND_MESSAGE', matchId, text, author: 'me' });
-    const reply = AUTO_REPLIES[Math.floor(Math.random() * AUTO_REPLIES.length)];
     setTimeout(() => {
+      const latest = stateRef.current;
+      const match = latest.matches.find((m) => m.id === matchId);
+      const pool = repliesFor(match && match.profile);
+      const sent = (latest.messages[matchId] || []).filter((m) => m.author === 'them').length;
+      const reply = pool[sent % pool.length];
       dispatch({ type: 'SEND_MESSAGE', matchId, text: reply, author: 'them' });
     }, 1200);
   }, []);
 
   const value = useMemo(() => {
-    const currentProfile = state.deck[state.cursor] || null;
+    const swipedIds = new Set(state.swiped.map((s) => s.profileId));
+    const matchedIds = new Set(state.matches.map((m) => m.profile.id));
+    const visibleDeck = state.deck.filter(
+      (p) =>
+        !swipedIds.has(p.id) && !matchedIds.has(p.id) && genderAllowed(p, state.preferences)
+    );
+    const visibleAdmirers = state.admirers.filter((p) => genderAllowed(p, state.preferences));
+    const currentProfile = visibleDeck[0] || null;
     return {
       ...state,
+      deck: visibleDeck,
+      admirers: visibleAdmirers,
       currentProfile,
-      remaining: Math.max(0, state.deck.length - state.cursor),
+      remaining: visibleDeck.length,
       savings: SAVINGS_BASE + state.adsWatched * SAVINGS_PER_AD,
-      canRewind: state.history.length > 0,
+      canRewind: state.swiped.length > 0,
       swipe: (profile, direction) => dispatch({ type: 'SWIPE', profile, direction }),
       rewind: () => dispatch({ type: 'REWIND' }),
       unlockAdmirers: () => dispatch({ type: 'UNLOCK_ADMIRERS' }),

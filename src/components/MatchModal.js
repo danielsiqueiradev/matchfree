@@ -44,7 +44,7 @@ export default function MatchModal({ visible, user, profile, onMessage, onKeepSw
             DEU MATCH! 🔥
           </Animated.Text>
           <Text style={styles.subtitle}>
-            Você e {profile.name} se curtiram. Sem pagar nada por isso 😉
+            Você e {profile.name} se curtiram. Que essa conexão seja abençoada 🙏
           </Text>
 
           <View style={styles.avatars}>
