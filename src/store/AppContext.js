@@ -41,6 +41,7 @@ const initialState = {
   gpsLocation: null, // { lat, lon } detectado ou simulado
   gpsLabel: null,
   exploreFilter: null, // chave de EXPLORE_FILTERS ativa na Descoberta
+  vip: false, // plano pago: libera tudo sem assistir anúncios
 };
 
 function reducer(state, action) {
@@ -151,6 +152,9 @@ function reducer(state, action) {
 
     case 'EXPLORE_FILTER':
       return { ...state, exploreFilter: action.filter };
+
+    case 'BUY_VIP':
+      return { ...state, vip: true };
 
     case 'UPDATE_PREFERENCES':
       return { ...state, preferences: { ...state.preferences, ...action.payload } };
@@ -277,6 +281,7 @@ export function AppProvider({ children }) {
       enableGps: (location, label) => dispatch({ type: 'GPS_ENABLE', location, label }),
       disableGps: () => dispatch({ type: 'GPS_DISABLE' }),
       setExploreFilter: (filter) => dispatch({ type: 'EXPLORE_FILTER', filter }),
+      buyVip: () => dispatch({ type: 'BUY_VIP' }),
       reset: () => dispatch({ type: 'RESET' }),
     };
   }, [state, sendMessage]);

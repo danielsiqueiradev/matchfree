@@ -59,7 +59,7 @@ const DEFAULT_REPLIES = [
   'Bora marcar um café pra conversar melhor?',
 ];
 
-export const DECK_PROFILES = [
+const BASE_DECK_PROFILES = [
   {
     id: '1',
     name: 'Camila',
@@ -414,3 +414,93 @@ export const EXPLORE_FILTERS = [
 export function repliesFor(profile) {
   return (profile && profile.replies) || DEFAULT_REPLIES;
 }
+
+// ---------------------------------------------------------------------------
+// 92 perfis gerados (total: 100 no baralho) — cada um com dados completos e
+// respostas de chat únicas combinadas a partir do REPLY_POOL.
+// ---------------------------------------------------------------------------
+
+const FEMALE_NAMES = [
+  'Ana', 'Bruna', 'Carla', 'Daniela', 'Elisa', 'Flávia', 'Gisele', 'Helena', 'Ingrid',
+  'Joyce', 'Karla', 'Larissa', 'Maria', 'Núbia', 'Olímpia', 'Paula', 'Quitéria',
+  'Raquel', 'Sofia', 'Talita', 'Úrsula', 'Valéria', 'Wanessa', 'Yasmin', 'Alice',
+  'Bianca', 'Célia', 'Débora', 'Esther', 'Fátima', 'Giovana', 'Hadassa', 'Íris',
+  'Joana', 'Kelly', 'Lúcia', 'Milena', 'Natália', 'Olívia', 'Priscila', 'Rebeca',
+  'Sara', 'Tatiana', 'Viviane', 'Aline',
+];
+const MALE_NAMES = [
+  'André', 'Bruno', 'Caio', 'Danilo', 'Eduardo', 'Fábio', 'Gustavo', 'Henrique',
+  'Igor', 'João', 'Kleber', 'Leonardo', 'Marcos', 'Nicolas', 'Otávio', 'Paulo',
+  'Rodrigo', 'Samuel', 'Tiago', 'Vitor', 'Wesley', 'Xavier', 'Yuri', 'Adriano',
+  'Breno', 'César', 'Davi', 'Elias', 'Felipe', 'Guilherme', 'Hugo', 'Igor',
+  'Josué', 'Kaio', 'Leandro', 'Matheus', 'Nathan', 'Osvaldo', 'Pablo', 'Renato',
+  'Sérgio', 'Tomás', 'Vinícius', 'Walter', 'Ezequiel', 'Moisés',
+];
+const PROFESSIONS = [
+  'Professora', 'Enfermeira', 'Médica', 'Advogada', 'Fisioterapeuta', 'Contadora',
+  'Psicóloga', 'Nutricionista', 'Arquiteta', 'Farmacêutica', 'Engenheiro',
+  'Professor', 'Advogado', 'Médico', 'Policia Militar', 'Desenvolvedor',
+  'Designer', 'Chef', 'Empresário', 'Missionário em tempo integral',
+];
+const FAITH_LINES = [
+  'Filho de Deus buscando propósito a dois.',
+  'Culto de domingo não se negocia.',
+  'Oração primeiro, encontro depois.',
+  'Sonhando com um lar que glorifica a Deus.',
+  'Discipulado e café: minha combinação favorita.',
+  'Buscando alguém pra orar junto.',
+  'Deus em primeiro lugar, sempre.',
+  'A graça me alcançou — agora busco um amor com propósito.',
+];
+const HOBBY_LINES = [
+  'Amo trilha e natureza.', 'Café especial me ganha.',
+  'Leio a Bíblia e romances.', 'Violão nas horas vagas.',
+  'Corro ao amanhecer.', 'Cozinho pros amigos.',
+  'Pinto quadros por hobby.', 'Jogador de futebol de varzea.',
+];
+const TAG_POOL = ['Louvor', 'Música', 'Esporte', 'Natureza', 'Leitura', 'Missões', 'Culinária', 'Praia'];
+const DENOMINATIONS_POOL = [
+  'Batista', 'Assembleia de Deus', 'Presbiteriana', 'Metodista', 'Adventista',
+  'Congregacional', 'Luterana', 'Pentecostal', 'Católica', 'Reformada',
+];
+const REPLY_POOL = [
+  'Paz do Senhor! Como foi seu dia hoje? 🙏',
+  'Que benção esse match! De qual igreja você é?',
+  'Acredito que Deus prepara os encontros certos.',
+  'Você gosta de conversar sobre a palavra?',
+  'Quer conversar? Adoro conhecer histórias de fé.',
+  'Qual seu louvor favorito? O meu muda toda semana 🎶',
+  'Sou do tipo que ora pelos amigos — vou orar por você também.',
+  'Bora conhecer um culto juntos algum dia?',
+  'Seu perfil chamou minha atenção. Fé que nos une!',
+  'Procuro um relacionamento que honre a Deus. E você?',
+  'Confio no tempo de Deus pra tudo — inclusive amizades.',
+  'Você já foi em algum retiro de jovens?',
+];
+const GENERATED_COUNT = 92;
+
+export const GENERATED_PROFILES = Array.from({ length: GENERATED_COUNT }, (_, i) => {
+  const female = i % 2 === 0;
+  const name = (female ? FEMALE_NAMES : MALE_NAMES)[Math.floor(i / 2) % (female ? FEMALE_NAMES : MALE_NAMES).length];
+  const tags = [TAG_POOL[i % TAG_POOL.length], TAG_POOL[(i + 3) % TAG_POOL.length]];
+  return {
+    id: `g${i + 1}`,
+    name,
+    age: 19 + ((i * 7) % 24),
+    gender: female ? 'F' : 'M',
+    distance: 1 + ((i * 13) % 60),
+    intent: ['Casamento', 'Relacionamento sério', 'Casamento', 'Relacionamento sério', 'Amizade'][i % 5],
+    height: (female ? 150 : 165) + ((i * 5) % 30),
+    children: ['Quer ter', 'Não quer', 'Tem filhos', 'Quer ter', 'Sem preferência'][i % 5],
+    bodyType: ['Atlético', 'Normal', 'Em forma', 'Normal', 'Mais cheinho'][i % 5],
+    denomination: DENOMINATIONS_POOL[i % DENOMINATIONS_POOL.length],
+    loveLanguage: FIELD_OPTIONS.loveLanguage[i % FIELD_OPTIONS.loveLanguage.length],
+    tags,
+    bio: `${PROFESSIONS[i % PROFESSIONS.length]}. ${FAITH_LINES[i % FAITH_LINES.length]} ${HOBBY_LINES[i % HOBBY_LINES.length]}`,
+    photo: `https://i.pravatar.cc/500?img=${((i * 3) % 70) + 1}`,
+    likesMe: i % 3 === 0,
+    replies: [REPLY_POOL[i % REPLY_POOL.length], REPLY_POOL[(i + 4) % REPLY_POOL.length], REPLY_POOL[(i + 7) % REPLY_POOL.length]],
+  };
+});
+
+export const DECK_PROFILES = [...BASE_DECK_PROFILES, ...GENERATED_PROFILES];

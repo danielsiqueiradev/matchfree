@@ -13,20 +13,22 @@ const FAKE_ADS = [
 ];
 
 export function RewardedAdProvider({ children }) {
-  const { registerAdWatched } = useApp();
+  const { registerAdWatched, vip } = useApp();
   const [request, setRequest] = useState(null); // { title, reward, resolve }
   const [secondsLeft, setSecondsLeft] = useState(AD_DURATION_SECONDS);
   const [ad, setAd] = useState(FAKE_ADS[0]);
   const resolverRef = useRef(null);
 
   const showRewardedAd = useCallback(({ title, reward }) => {
+    // Assinantes VIP não assistem anúncios: liberação imediata.
+    if (vip) return Promise.resolve(true);
     setAd(FAKE_ADS[Math.floor(Math.random() * FAKE_ADS.length)]);
     setSecondsLeft(AD_DURATION_SECONDS);
     return new Promise((resolve) => {
       resolverRef.current = resolve;
       setRequest({ title, reward });
     });
-  }, []);
+  }, [vip]);
 
   useEffect(() => {
     if (!request || secondsLeft <= 0) return undefined;

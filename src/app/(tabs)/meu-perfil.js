@@ -26,7 +26,7 @@ export default function MyProfileScreen() {
             )}
             <View style={{ height: 60 }} />
             <Text style={styles.name}>
-              {app.user.name}, {app.user.age}
+              {app.user.name}, {app.user.age} {app.vip ? '👑' : ''}
             </Text>
             <Text style={styles.location}>📍 {app.user.location}</Text>
             {(app.user.church || app.user.verse || app.user.ministry) && (

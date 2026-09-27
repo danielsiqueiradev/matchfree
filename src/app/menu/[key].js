@@ -1,5 +1,5 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRewardedAd } from '../../components/RewardedAdProvider';
 import { useApp } from '../../store/AppContext';
@@ -24,7 +24,7 @@ const CONTENT = {
   },
   plan: {
     title: 'Meu Plano',
-    body: 'Plano atual: MatchFree Grátis 🎉\n\nTodos os recursos premium são desbloqueados assistindo anúncios de 15s.',
+    body: 'Todos os recursos premium são desbloqueados assistindo anúncios de 15s — ou tudo liberado com o VIP, sem anúncio nenhum.',
   },
   help: {
     title: 'Como utilizar o Aplicativo',
@@ -45,6 +45,19 @@ export default function MenuScreen() {
   const app = useApp();
   const { showRewardedAd } = useRewardedAd();
   const item = CONTENT[key] || { title: 'Opções', body: 'Em breve.' };
+
+  const handleBuyVip = () => {
+    const msg =
+      'Compra simulada do MVP: ativar MatchFree VIP por R$ 19,90/mês? Todos os recursos passam a liberar sem anúncios.';
+    if (typeof window !== 'undefined' && window.confirm) {
+      if (window.confirm(msg)) app.buyVip();
+      return;
+    }
+    Alert.alert('MatchFree VIP', msg, [
+      { text: 'Cancelar', style: 'cancel' },
+      { text: 'Assinar', onPress: app.buyVip },
+    ]);
+  };
 
   const handleBoost = async () => {
     const ok = await showRewardedAd({
@@ -73,7 +86,30 @@ export default function MenuScreen() {
             </View>
           )}
 
-          {(key === 'plan' || key === 'premium') && (
+          {key === 'plan' && (
+            <View style={styles.statsBox}>
+              <Text style={styles.statsLine}>
+                {app.vip ? '👑 VIP ativo — zero anúncios' : 'Plano atual: Grátis com anúncios'}
+              </Text>
+              {!app.vip && (
+                <>
+                  <Text style={styles.statsSub}>
+                    {'👑 MatchFree VIP — tudo liberado sem anúncios:\n• Ver quem te curtiu sem anúncio\n• Rewind e Boost ilimitados\n• R$ 19,90/mês (simulado no MVP)'}
+                  </Text>
+                  <Pressable style={[styles.cta, styles.vipBtn]} onPress={handleBuyVip}>
+                    <Text style={styles.ctaText}>👑 ASSINAR VIP — R$ 19,90/mês</Text>
+                  </Pressable>
+                </>
+              )}
+              <Pressable style={styles.cta} onPress={handleBoost}>
+                <Text style={styles.ctaText}>
+                  ⭐ {app.vip ? 'ATIVAR BOOST (VIP)' : 'ATIVAR BOOST COM ANÚNCIO DE 15s'}
+                </Text>
+              </Pressable>
+            </View>
+          )}
+
+          {key === 'premium' && (
             <View style={styles.statsBox}>
               <Text style={styles.statsLine}>
                 {app.boostRank ? `Boost ativo: Top ${app.boostRank}%` : 'Boost inativo'}
@@ -113,4 +149,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   ctaText: { color: '#fff', fontWeight: '900', fontSize: 12 },
+  vipBtn: { backgroundColor: '#8E44AD', marginBottom: spacing(1) },
 });

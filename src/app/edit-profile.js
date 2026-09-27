@@ -1,3 +1,4 @@
+import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
 import {
   Alert,
@@ -13,6 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FIELD_OPTIONS, MAX_PROFILE_PHOTOS } from '../data/mock';
 import { useApp } from '../store/AppContext';
+import { moderatePhoto } from '../utils/photoGuard';
 import { light, radius, spacing } from '../theme';
 
 // ---------- Componentes base do formulário ----------
@@ -106,10 +108,32 @@ function Stepper({ label, value, suffix, onChange, min, max, step = 1 }) {
 
 // ---------- Seções do formulário ----------
 
+const notify = (title, message) => {
+  if (Platform.OS === 'web') window.alert(`${title}\n\n${message}`);
+  else Alert.alert(title, message);
+};
+
+async function pickFromLibrary() {
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ['images'],
+    quality: 0.7,
+    base64: true,
+  });
+  if (result.canceled || !result.assets || !result.assets[0]) return null;
+  const asset = result.assets[0];
+  return {
+    uri: asset.base64
+      ? `data:${asset.mimeType || 'image/jpeg'};base64,${asset.base64}`
+      : asset.uri,
+    fileName: asset.fileName || asset.uri || '',
+  };
+}
+
 function PhotosSection({ app }) {
   const [photo, setPhoto] = useState(app.user.photo);
   const [cover, setCover] = useState(app.user.coverPhoto || '');
   const [newPhoto, setNewPhoto] = useState('');
+  const [checking, setChecking] = useState(false);
   const photos = app.user.photos || [];
 
   const addPhoto = () => {
@@ -117,6 +141,22 @@ function PhotosSection({ app }) {
     if (!url || photos.length >= MAX_PROFILE_PHOTOS) return;
     app.updateUser({ photos: [...photos, url] });
     setNewPhoto('');
+  };
+
+  const upload = async (apply) => {
+    setChecking(true);
+    try {
+      const picked = await pickFromLibrary();
+      if (!picked) return;
+      const verdict = await moderatePhoto(picked.uri, picked.fileName);
+      if (!verdict.ok) {
+        notify('Moderação de fotos', verdict.reason);
+        return;
+      }
+      apply(picked.uri);
+    } finally {
+      setChecking(false);
+    }
   };
 
   return (
@@ -127,9 +167,17 @@ function PhotosSection({ app }) {
         onChangeText={setPhoto}
         placeholder="https://..."
       />
-      <Pressable style={styles.inlineSave} onPress={() => app.updateUser({ photo })}>
-        <Text style={styles.inlineSaveText}>Salvar foto principal</Text>
-      </Pressable>
+      <View style={styles.photoBtns}>
+        <Pressable style={styles.inlineSave} onPress={() => app.updateUser({ photo })}>
+          <Text style={styles.inlineSaveText}>Salvar foto principal</Text>
+        </Pressable>
+        <Pressable
+          style={styles.uploadBtn}
+          onPress={() => upload((uri) => { setPhoto(uri); app.updateUser({ photo: uri }); })}
+        >
+          <Text style={styles.inlineSaveText}>📷 Enviar do dispositivo</Text>
+        </Pressable>
+      </View>
 
       <Field
         label="Foto de capa (URL)"
@@ -137,9 +185,17 @@ function PhotosSection({ app }) {
         onChangeText={setCover}
         placeholder="https://..."
       />
-      <Pressable style={styles.inlineSave} onPress={() => app.updateUser({ coverPhoto: cover })}>
-        <Text style={styles.inlineSaveText}>Salvar capa</Text>
-      </Pressable>
+      <View style={styles.photoBtns}>
+        <Pressable style={styles.inlineSave} onPress={() => app.updateUser({ coverPhoto: cover })}>
+          <Text style={styles.inlineSaveText}>Salvar capa</Text>
+        </Pressable>
+        <Pressable
+          style={styles.uploadBtn}
+          onPress={() => upload((uri) => { setCover(uri); app.updateUser({ coverPhoto: uri }); })}
+        >
+          <Text style={styles.inlineSaveText}>🖼️ Enviar capa</Text>
+        </Pressable>
+      </View>
       {!!app.user.coverPhoto && (
         <Image source={{ uri: app.user.coverPhoto }} style={styles.coverPreview} />
       )}
@@ -174,12 +230,22 @@ function PhotosSection({ app }) {
             placeholderTextColor={light.textMuted}
           />
           <Pressable style={styles.smallBtn} onPress={addPhoto}>
-            <Text style={styles.smallBtnText}>+ Foto</Text>
+            <Text style={styles.smallBtnText}>+ URL</Text>
+          </Pressable>
+          <Pressable
+            style={styles.smallBtn}
+            onPress={() =>
+              photos.length < MAX_PROFILE_PHOTOS &&
+              upload((uri) => app.updateUser({ photos: [...photos, uri] }))
+            }
+          >
+            <Text style={styles.smallBtnText}>📷 Upload</Text>
           </Pressable>
         </View>
       ) : (
         <Text style={styles.warn}>Limite de {MAX_PROFILE_PHOTOS} fotos atingido.</Text>
       )}
+      {checking && <Text style={styles.moderation}>🔎 Moderando a foto escolhida...</Text>}
     </Section>
   );
 }
@@ -630,6 +696,17 @@ const styles = StyleSheet.create({
   photoRemoveText: { color: '#fff', fontSize: 11, fontWeight: '900' },
   photoEmpty: { color: light.textMuted, fontSize: 13, paddingVertical: spacing(1.5) },
   warn: { color: light.accent, fontSize: 12 },
+  moderation: { color: light.textMuted, fontSize: 12, marginTop: spacing(1) },
+  photoBtns: { flexDirection: 'row', gap: spacing(1), justifyContent: 'flex-end' },
+  uploadBtn: {
+    alignSelf: 'flex-end',
+    backgroundColor: light.text,
+    borderRadius: radius.sm,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    marginTop: -spacing(0.5),
+    marginBottom: spacing(1.5),
+  },
   resetBtn: { alignItems: 'center', marginTop: spacing(3), paddingBottom: spacing(3) },
   resetText: { color: light.textMuted, fontSize: 12, textDecorationLine: 'underline' },
 });
