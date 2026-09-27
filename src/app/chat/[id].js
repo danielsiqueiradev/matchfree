@@ -6,6 +6,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -14,10 +15,17 @@ import {
 import { useApp } from '../../store/AppContext';
 import { colors, radius, spacing } from '../../theme';
 
+const EMOJIS = [
+  '😊', '😂', '🥰', '😍', '😘', '🙂', '😉', '🤗', '😎', '🤔', '😅', '😌',
+  '🙏', '🙌', '✨', '🕊️', '⛪', '📖', '💒', '❤️', '💚', '💙', '💛', '💜',
+  '🔥', '⭐', '🎉', '🎵', '☕', '🍕', '🌅', '🌻', '💐', '👍', '👏', '🤝',
+];
+
 export default function ChatScreen() {
   const { id } = useLocalSearchParams();
   const app = useApp();
   const [text, setText] = useState('');
+  const [emojisOpen, setEmojisOpen] = useState(false);
   const listRef = useRef(null);
 
   const match = app.matches.find((m) => m.id === id);
@@ -68,7 +76,32 @@ export default function ChatScreen() {
         )}
       />
 
+      {emojisOpen && (
+        <View style={styles.emojiPanel}>
+          <ScrollView style={{ maxHeight: 180 }}>
+            <View style={styles.emojiGrid}>
+              {EMOJIS.map((e) => (
+                <Pressable
+                  key={e}
+                  style={styles.emojiBtn}
+                  onPress={() => setText((t) => `${t}${e}`)}
+                >
+                  <Text style={styles.emoji}>{e}</Text>
+                </Pressable>
+              ))}
+            </View>
+          </ScrollView>
+        </View>
+      )}
+
       <View style={styles.composer}>
+        <Pressable
+          style={styles.emojiToggle}
+          onPress={() => setEmojisOpen((v) => !v)}
+          accessibilityLabel="Emojis"
+        >
+          <Text style={styles.emojiToggleText}>{emojisOpen ? '⌨️' : '😊'}</Text>
+        </Pressable>
         <TextInput
           style={styles.input}
           value={text}
@@ -126,6 +159,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   sendText: { color: '#fff', fontSize: 18 },
+  emojiPanel: {
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    backgroundColor: colors.card,
+    padding: spacing(1),
+  },
+  emojiGrid: { flexDirection: 'row', flexWrap: 'wrap' },
+  emojiBtn: { width: '12.5%', aspectRatio: 1, alignItems: 'center', justifyContent: 'center' },
+  emoji: { fontSize: 24 },
+  emojiToggle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.cardAlt,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emojiToggleText: { fontSize: 20 },
   missing: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg },
   missingText: { color: colors.textMuted },
 });
