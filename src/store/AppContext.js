@@ -36,6 +36,9 @@ const initialState = {
   adsWatched: 0,
   boostRank: null, // posição no ranking de destaque
   boostExpiresAt: null,
+  gpsEnabled: false, // filtro de pessoas próximas
+  gpsLocation: null, // { lat, lon } detectado ou simulado
+  gpsLabel: null,
 };
 
 function reducer(state, action) {
@@ -133,6 +136,17 @@ function reducer(state, action) {
         user: { ...state.user, seeking: { ...state.user.seeking, ...action.payload } },
       };
 
+    case 'GPS_ENABLE':
+      return {
+        ...state,
+        gpsEnabled: true,
+        gpsLocation: action.location || null,
+        gpsLabel: action.label || 'GPS ativado',
+      };
+
+    case 'GPS_DISABLE':
+      return { ...state, gpsEnabled: false };
+
     case 'UPDATE_PREFERENCES':
       return { ...state, preferences: { ...state.preferences, ...action.payload } };
 
@@ -212,11 +226,17 @@ export function AppProvider({ children }) {
   const value = useMemo(() => {
     const swipedIds = new Set(state.swiped.map((s) => s.profileId));
     const matchedIds = new Set(state.matches.map((m) => m.profile.id));
+    const nearEnough = (p) => !state.gpsEnabled || p.distance <= state.preferences.maxDistance;
     const visibleDeck = state.deck.filter(
       (p) =>
-        !swipedIds.has(p.id) && !matchedIds.has(p.id) && genderAllowed(p, state.preferences)
+        !swipedIds.has(p.id) &&
+        !matchedIds.has(p.id) &&
+        genderAllowed(p, state.preferences) &&
+        nearEnough(p)
     );
-    const visibleAdmirers = state.admirers.filter((p) => genderAllowed(p, state.preferences));
+    const visibleAdmirers = state.admirers.filter(
+      (p) => genderAllowed(p, state.preferences) && nearEnough(p)
+    );
     const currentProfile = visibleDeck[0] || null;
     return {
       ...state,
@@ -244,6 +264,8 @@ export function AppProvider({ children }) {
       updateUser: (payload) => dispatch({ type: 'UPDATE_USER', payload }),
       updateSeeking: (payload) => dispatch({ type: 'UPDATE_SEEKING', payload }),
       updatePreferences: (payload) => dispatch({ type: 'UPDATE_PREFERENCES', payload }),
+      enableGps: (location, label) => dispatch({ type: 'GPS_ENABLE', location, label }),
+      disableGps: () => dispatch({ type: 'GPS_DISABLE' }),
       reset: () => dispatch({ type: 'RESET' }),
     };
   }, [state, sendMessage]);

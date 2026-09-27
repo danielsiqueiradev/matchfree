@@ -55,6 +55,11 @@ export default function DiscoverScreen() {
               ⭐ {app.boostRank ? `Top ${app.boostRank}%` : 'Sem boost'}
             </Text>
           </View>
+          {app.gpsEnabled && (
+            <View style={[styles.pill, styles.pillActive]}>
+              <Text style={styles.pillText}>📍 {app.preferences.maxDistance} km</Text>
+            </View>
+          )}
         </View>
       </View>
 

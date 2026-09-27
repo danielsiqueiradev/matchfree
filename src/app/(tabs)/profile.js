@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useApp } from '../../store/AppContext';
 import { light, radius, spacing } from '../../theme';
@@ -50,6 +50,30 @@ function Stat({ label, value }) {
 
 export default function OptionsScreen() {
   const app = useApp();
+
+  const toggleGps = (enabled) => {
+    if (!enabled) {
+      app.disableGps();
+      return;
+    }
+    if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) =>
+          app.enableGps(
+            { lat: pos.coords.latitude, lon: pos.coords.longitude },
+            'GPS verificado'
+          ),
+        () => app.enableGps(null, 'GPS simulado (permissão negada)'),
+        { timeout: 4000 }
+      );
+      // se o navegador não responder, garante a ativação simulada
+      setTimeout(() => {
+        if (!app.gpsEnabled) app.enableGps(null, 'GPS simulado');
+      }, 4500);
+      return;
+    }
+    app.enableGps(null, 'GPS simulado');
+  };
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -116,6 +140,54 @@ export default function OptionsScreen() {
               app.updatePreferences({ showMen: g === 'M', showWomen: g === 'F' })
             }
           />
+        </View>
+
+        <View style={[styles.card, styles.gpsCard]}>
+          <View style={styles.gpsRow}>
+            <Text style={styles.gpsLabel}>📍 Apenas pessoas próximas</Text>
+            <Switch
+              value={app.gpsEnabled}
+              onValueChange={toggleGps}
+              trackColor={{ false: light.border, true: light.accent }}
+              thumbColor="#fff"
+            />
+          </View>
+          {app.gpsEnabled && (
+            <>
+              <Text style={styles.gpsStatus}>✅ {app.gpsLabel}</Text>
+              <View style={styles.gpsRow}>
+                <Text style={styles.gpsLabel}>Distância máxima</Text>
+                <View style={styles.stepperControls}>
+                  <Pressable
+                    style={styles.stepBtn}
+                    onPress={() =>
+                      app.updatePreferences({
+                        maxDistance: Math.max(1, app.preferences.maxDistance - 5),
+                      })
+                    }
+                  >
+                    <Text style={styles.stepBtnText}>−</Text>
+                  </Pressable>
+                  <Text style={styles.stepperValue}>{app.preferences.maxDistance} km</Text>
+                  <Pressable
+                    style={styles.stepBtn}
+                    onPress={() =>
+                      app.updatePreferences({
+                        maxDistance: Math.min(200, app.preferences.maxDistance + 5),
+                      })
+                    }
+                  >
+                    <Text style={styles.stepBtnText}>+</Text>
+                  </Pressable>
+                </View>
+              </View>
+            </>
+          )}
+          {!app.gpsEnabled && (
+            <Text style={styles.gpsHint}>
+              Ative para ver só quem está perto de você (usa o GPS do aparelho).
+            </Text>
+          )}
         </View>
 
         <View style={[styles.card, { padding: 0, marginTop: spacing(2) }]}>
@@ -228,6 +300,27 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textDecorationLine: 'underline',
   },
+  gpsCard: { padding: spacing(2), marginTop: spacing(2) },
+  gpsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 6,
+  },
+  gpsLabel: { color: light.text, fontWeight: '700', fontSize: 14 },
+  gpsStatus: { color: '#2E9E5B', fontSize: 12, marginBottom: 2 },
+  gpsHint: { color: light.textMuted, fontSize: 12, marginTop: 4 },
+  stepperControls: { flexDirection: 'row', alignItems: 'center', gap: spacing(1.5) },
+  stepBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: light.bg,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepBtnText: { color: light.text, fontSize: 16, fontWeight: '900' },
+  stepperValue: { color: light.text, fontWeight: '800', minWidth: 58, textAlign: 'center' },
   statsRow: { flexDirection: 'row' },
   stat: { flex: 1, alignItems: 'center' },
   statLabel: { color: light.textMuted, fontSize: 13 },
