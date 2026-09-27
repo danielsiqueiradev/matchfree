@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { MAX_PROFILE_PHOTOS } from '../data/mock';
 import { useApp } from '../store/AppContext';
 import { light, radius, spacing } from '../theme';
 
@@ -37,6 +38,21 @@ function Stepper({ label, value, suffix, onChange, min, max, step = 1 }) {
 export default function EditProfileScreen() {
   const app = useApp();
   const [photo, setPhoto] = useState(app.user.photo);
+  const [cover, setCover] = useState(app.user.coverPhoto || '');
+  const [newPhoto, setNewPhoto] = useState('');
+
+  const photos = app.user.photos || [];
+
+  const addPhoto = () => {
+    const url = newPhoto.trim();
+    if (!url || photos.length >= MAX_PROFILE_PHOTOS) return;
+    app.updateUser({ photos: [...photos, url] });
+    setNewPhoto('');
+  };
+
+  const removePhoto = (index) => {
+    app.updateUser({ photos: photos.filter((_, i) => i !== index) });
+  };
 
   const confirmReset = () => {
     const question = 'Reiniciar MVP? Isso apaga login, matches, mensagens e desbloqueios locais.';
@@ -109,6 +125,60 @@ export default function EditProfileScreen() {
           />
         </View>
 
+        <View style={[styles.card, { marginTop: spacing(2) }]}>
+          <Text style={styles.label}>Foto de capa (URL)</Text>
+          <View style={{ flexDirection: 'row', gap: spacing(1) }}>
+            <TextInput
+              style={[styles.input, { flex: 1 }]}
+              value={cover}
+              onChangeText={setCover}
+              autoCapitalize="none"
+              placeholder="https://..."
+              placeholderTextColor={light.textMuted}
+            />
+            <Pressable style={styles.smallBtn} onPress={() => app.updateUser({ coverPhoto: cover })}>
+              <Text style={styles.smallBtnText}>Salvar</Text>
+            </Pressable>
+          </View>
+          {!!app.user.coverPhoto && (
+            <Image source={{ uri: app.user.coverPhoto }} style={styles.coverPreview} />
+          )}
+
+          <Text style={[styles.label, { marginTop: spacing(2.5) }]}>
+            Fotos do perfil ({photos.length}/{MAX_PROFILE_PHOTOS})
+          </Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.photoRow}>
+            {photos.map((uri, index) => (
+              <View key={`${uri}-${index}`} style={styles.photoItem}>
+                <Image source={{ uri }} style={styles.photoThumb} />
+                <Pressable style={styles.photoRemove} onPress={() => removePhoto(index)}>
+                  <Text style={styles.photoRemoveText}>✕</Text>
+                </Pressable>
+              </View>
+            ))}
+            {photos.length === 0 && (
+              <Text style={styles.photoEmpty}>Nenhuma foto adicional ainda.</Text>
+            )}
+          </ScrollView>
+          {photos.length < MAX_PROFILE_PHOTOS ? (
+            <View style={{ flexDirection: 'row', gap: spacing(1) }}>
+              <TextInput
+                style={[styles.input, { flex: 1 }]}
+                value={newPhoto}
+                onChangeText={setNewPhoto}
+                autoCapitalize="none"
+                placeholder="URL da nova foto"
+                placeholderTextColor={light.textMuted}
+              />
+              <Pressable style={styles.smallBtn} onPress={addPhoto}>
+                <Text style={styles.smallBtnText}>+ Foto</Text>
+              </Pressable>
+            </View>
+          ) : (
+            <Text style={styles.warn}>Limite de {MAX_PROFILE_PHOTOS} fotos atingido.</Text>
+          )}
+        </View>
+
         <Pressable style={styles.resetBtn} onPress={confirmReset}>
           <Text style={styles.resetText}>Sair e reiniciar dados locais do MVP</Text>
         </Pressable>
@@ -174,6 +244,29 @@ const styles = StyleSheet.create({
   },
   stepBtnText: { color: light.text, fontSize: 18, fontWeight: '900' },
   stepperValue: { color: light.text, fontWeight: '800', minWidth: 70, textAlign: 'center' },
+  coverPreview: {
+    width: '100%',
+    height: 110,
+    borderRadius: radius.sm,
+    marginTop: spacing(1),
+  },
+  photoRow: { marginTop: spacing(1), marginBottom: spacing(1.5) },
+  photoItem: { marginRight: spacing(1) },
+  photoThumb: { width: 74, height: 74, borderRadius: radius.sm },
+  photoRemove: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: light.accent,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  photoRemoveText: { color: '#fff', fontSize: 11, fontWeight: '900' },
+  photoEmpty: { color: light.textMuted, fontSize: 13, paddingVertical: spacing(1.5) },
+  warn: { color: light.accent, fontSize: 12 },
   resetBtn: { alignItems: 'center', marginTop: spacing(3) },
   resetText: { color: light.textMuted, fontSize: 12, textDecorationLine: 'underline' },
 });

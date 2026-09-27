@@ -33,7 +33,10 @@ export default function OptionsScreen() {
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.profileWrap}>
-          <View style={styles.card}>
+          <View style={[styles.card, styles.profileCard]}>
+            {!!app.user.coverPhoto && (
+              <Image source={{ uri: app.user.coverPhoto }} style={styles.cover} />
+            )}
             <View style={{ height: 60 }} />
             <Text style={styles.name}>
               {app.user.name}, {app.user.age}
@@ -50,6 +53,21 @@ export default function OptionsScreen() {
             <Pressable onPress={() => router.push('/menu/credits')}>
               <Text style={styles.moreStats}>Ver Mais Estatísticas</Text>
             </Pressable>
+
+            {(app.user.photos || []).length > 0 && (
+              <>
+                <View style={styles.divider} />
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.galleryRow}
+                >
+                  {app.user.photos.map((uri, index) => (
+                    <Image key={`${uri}-${index}`} source={{ uri }} style={styles.galleryThumb} />
+                  ))}
+                </ScrollView>
+              </>
+            )}
           </View>
 
           <View style={styles.avatarWrap}>
@@ -92,9 +110,18 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     elevation: 3,
   },
+  cover: {
+    width: '100%',
+    height: 130,
+    borderTopLeftRadius: radius.md,
+    borderTopRightRadius: radius.md,
+  },
+  galleryRow: { paddingHorizontal: spacing(2), paddingBottom: spacing(1), gap: spacing(1) },
+  galleryThumb: { width: 62, height: 62, borderRadius: radius.sm },
+  profileCard: { paddingVertical: 0, overflow: 'hidden', paddingBottom: spacing(1.5) },
   avatarWrap: {
     position: 'absolute',
-    top: -55,
+    top: 75,
     left: 0,
     right: 0,
     alignItems: 'center',
@@ -133,7 +160,7 @@ const styles = StyleSheet.create({
     color: light.accent,
     textAlign: 'center',
     fontWeight: '700',
-    paddingVertical: 2,
+    paddingVertical: 10,
   },
   menuItem: {
     flexDirection: 'row',

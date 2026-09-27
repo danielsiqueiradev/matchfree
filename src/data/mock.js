@@ -6,6 +6,11 @@ export const CURRENT_USER = {
   location: 'Maricá, Rio de Janeiro',
   bio: 'Servo de Deus. Curto culto aos domingos, café com amigos e um bom louvor. Buscando alguém para caminhar junto em Cristo.',
   photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500',
+  coverPhoto: 'https://images.unsplash.com/photo-1499744937866-d7e566a20a61?w=900',
+  photos: [
+    'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=500',
+    'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=500',
+  ],
 };
 
 // Replies padrão quando o perfil não define as próprias.
@@ -27,7 +32,7 @@ export const DECK_PROFILES = [
     photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500',
     likesMe: true,
     replies: [
-      'Paz do Senhor, Alex! Que alegria dar match contigo 🙌',
+      'Paz do Senhor, Daniel! Que alegria dar match contigo 🙌',
       'Adorei saber que você também vai ao culto aos domingos!',
       'Qual louvor não sai da tua cabeça essa semana? 🎶',
     ],
@@ -42,7 +47,7 @@ export const DECK_PROFILES = [
     photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500',
     likesMe: false,
     replies: [
-      'Fala, Alex! Tudo certo por aí?',
+      'Fala, Daniel! Tudo certo por aí?',
       'Vi que somos da mesma cidade. De qual igreja você é?',
       'Entreguei meu coração pra Deus e agora procuro uma amizade que honre Ele 😊',
     ],
@@ -216,6 +221,9 @@ export const SAVINGS_BASE = 50;
 // Cada anúncio assistido "economiza" o equivalente a um dia de assinatura premium.
 export const SAVINGS_PER_AD = 5;
 export const AD_DURATION_SECONDS = 15;
+
+// Limite de fotos extras do perfil (fora a foto principal e a capa).
+export const MAX_PROFILE_PHOTOS = 5;
 
 export function repliesFor(profile) {
   return (profile && profile.replies) || DEFAULT_REPLIES;

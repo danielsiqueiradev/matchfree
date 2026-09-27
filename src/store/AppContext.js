@@ -18,7 +18,7 @@ import {
   SECRET_ADMIRERS,
 } from '../data/mock';
 
-const STORAGE_KEY = '@matchfree/state/v3';
+const STORAGE_KEY = '@matchfree/state/v4';
 
 const initialState = {
   hydrated: false,
