@@ -18,8 +18,8 @@ function ExploreTile({ filter, count, active, onToggle }) {
       accessibilityState={{ selected: active }}
     >
       <Text style={styles.tileIcon}>{filter.icon}</Text>
-      <Text style={styles.tileLabel}>{filter.label}</Text>
-      <Text style={styles.tileCount}>{count} {count === 1 ? 'pessoa' : 'pessoas'}</Text>
+      <Text style={styles.tileLabel} numberOfLines={2}>{filter.label}</Text>
+      <Text style={styles.tileCount}>{count}</Text>
     </Pressable>
   );
 }
@@ -82,29 +82,6 @@ export default function DiscoverScreen() {
         </View>
       </View>
 
-      <View>
-        <Text style={styles.exploreTitle}>
-          Conheça pessoas que têm a mesma intenção que você
-        </Text>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.exploreRow}
-        >
-          {tiles.map((f) => (
-            <ExploreTile
-              key={f.key}
-              filter={f}
-              count={app.deckPool.filter((p) => f.test(p, ctx)).length}
-              active={app.exploreFilter === f.key}
-              onToggle={() =>
-                app.setExploreFilter(app.exploreFilter === f.key ? null : f.key)
-              }
-            />
-          ))}
-        </ScrollView>
-      </View>
-
       {!(app.user.photos || []).length && !photoHintDismissed && (
         <View style={styles.photoHint}>
           <Text style={styles.photoHintText}>
@@ -119,13 +96,32 @@ export default function DiscoverScreen() {
         </View>
       )}
 
-      <View style={styles.deckArea}>
-        <SwipeDeck
-          ref={deckRef}
-          profiles={app.deck}
-          cursor={0}
-          onSwipe={handleSwipe}
-        />
+      <View style={styles.body}>
+        <View style={styles.sidebar}>
+          <Text style={styles.sidebarTitle}>Mesma{'\n'}intenção</Text>
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.sidebarList}>
+            {tiles.map((f) => (
+              <ExploreTile
+                key={f.key}
+                filter={f}
+                count={app.deckPool.filter((p) => f.test(p, ctx)).length}
+                active={app.exploreFilter === f.key}
+                onToggle={() =>
+                  app.setExploreFilter(app.exploreFilter === f.key ? null : f.key)
+                }
+              />
+            ))}
+          </ScrollView>
+        </View>
+
+        <View style={styles.deckArea}>
+          <SwipeDeck
+            ref={deckRef}
+            profiles={app.deck}
+            cursor={0}
+            onSwipe={handleSwipe}
+          />
+        </View>
       </View>
 
       <Text style={styles.hint}>
@@ -226,30 +222,40 @@ const styles = StyleSheet.create({
   },
   photoHintBtnText: { color: '#fff', fontWeight: '800', fontSize: 12 },
   photoHintClose: { color: colors.textMuted, fontSize: 14, padding: 4 },
-  exploreTitle: {
+  body: { flex: 1, flexDirection: 'row' },
+  sidebar: { width: 64, paddingBottom: spacing(1) },
+  sidebarTitle: {
     color: colors.textMuted,
-    fontSize: 11,
+    fontSize: 9,
     fontWeight: '700',
-    marginHorizontal: spacing(2),
-    marginBottom: 6,
+    textAlign: 'center',
+    paddingHorizontal: 4,
+    paddingBottom: 4,
   },
-  exploreRow: { paddingHorizontal: spacing(2), gap: 8, paddingBottom: spacing(1) },
+  sidebarList: { alignItems: 'center', gap: 6, paddingHorizontal: 4 },
   tile: {
-    width: 118,
-    height: 150,
-    borderRadius: radius.md,
+    width: 54,
+    height: 62,
+    borderRadius: radius.sm,
     backgroundColor: colors.cardAlt,
     borderWidth: 2,
     borderColor: 'transparent',
-    padding: spacing(1.5),
-    justifyContent: 'flex-end',
+    alignItems: 'center',
+    justifyContent: 'center',
     overflow: 'hidden',
   },
-  tileInactive: { opacity: 0.55 },
-  tileActive: { borderColor: colors.accent },
-  tileIcon: { position: 'absolute', top: spacing(1.5), left: spacing(1.5), fontSize: 24 },
-  tileLabel: { color: colors.text, fontWeight: '800', fontSize: 13 },
-  tileCount: { color: colors.textMuted, fontSize: 11, marginTop: 2 },
+  tileInactive: { opacity: 0.5 },
+  tileActive: { borderColor: colors.accent, opacity: 1 },
+  tileIcon: { fontSize: 15 },
+  tileLabel: {
+    color: colors.text,
+    fontWeight: '700',
+    fontSize: 8,
+    textAlign: 'center',
+    marginTop: 2,
+    lineHeight: 9,
+  },
+  tileCount: { color: colors.accent, fontSize: 9, fontWeight: '900' },
   hint: { color: colors.textMuted, textAlign: 'center', fontSize: 12, marginBottom: spacing(1) },
   actions: {
     flexDirection: 'row',
