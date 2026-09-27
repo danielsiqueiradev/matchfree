@@ -8,6 +8,39 @@ export const CURRENT_USER = {
   verse: 'Provérbios 3:5-6',
   ministry: 'Louvor',
   bio: 'Servo de Deus. Curto culto aos domingos, café com amigos e um bom louvor. Buscando alguém para caminhar junto em Cristo.',
+  // Religião
+  churchActivities: 'Louvor',
+  churchFrequency: 'Toda semana',
+  // Dados gerais
+  livesIn: 'Maricá',
+  maritalStatus: 'Solteiro(a)',
+  children: 'Não tenho',
+  education: 'Superior completo',
+  profession: 'Engenheiro',
+  sports: 'Corrida, Futebol',
+  hobbies: 'Leitura, Violão',
+  // Aparência
+  height: 178,
+  weight: 82,
+  bodyType: 'Atlético',
+  ethnicity: 'Parda',
+  hairColor: 'Castanho',
+  hairType: 'Ondulado',
+  eyeColor: 'Castanho',
+  // Perfil que eu busco
+  seeking: {
+    church: 'Evangélica',
+    relationshipType: 'Casamento',
+    minAge: 25,
+    maxAge: 35,
+    minHeight: 150,
+    maxHeight: 175,
+    children: 'Sem preferência',
+    bodyType: 'Sem preferência',
+    valuedTraits: 'Fé, família e bom humor',
+    otherTraits: '',
+    getAlong: 'Você amar a Deus acima de tudo',
+  },
   photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500',
   coverPhoto: 'https://images.unsplash.com/photo-1499744937866-d7e566a20a61?w=900',
   photos: [
@@ -224,6 +257,20 @@ export const SAVINGS_BASE = 50;
 // Cada anúncio assistido "economiza" o equivalente a um dia de assinatura premium.
 export const SAVINGS_PER_AD = 5;
 export const AD_DURATION_SECONDS = 15;
+
+export const FIELD_OPTIONS = {
+  churchFrequency: ['Toda semana', '2-3x por mês', '1x por mês', 'Ocasionalmente'],
+  maritalStatus: ['Solteiro(a)', 'Divorciado(a)', 'Viúvo(a)'],
+  children: ['Não tenho', '1 filho(a)', '2 filhos', '3+ filhos', 'Tenho, não moram comigo'],
+  education: ['Ensino Médio', 'Superior incompleto', 'Superior completo', 'Pós-graduação', 'Mestrado/Doutorado'],
+  bodyType: ['Atlético', 'Normal', 'Em forma', 'Mais cheinho', 'Sem preferência'],
+  ethnicity: ['Branca', 'Parda', 'Negra', 'Asiática', 'Indígena', 'Outra'],
+  hairColor: ['Castanho', 'Preto', 'Loiro', 'Ruivo', 'Grisalho', 'Outro'],
+  hairType: ['Liso', 'Ondulado', 'Cacheado', 'Crespo', 'Careca'],
+  eyeColor: ['Castanho', 'Preto', 'Azul', 'Verde', 'Mel'],
+  seekingChildren: ['Sem preferência', 'Não tenha', 'Tenha', 'Tenha, não morem comigo'],
+  relationshipType: ['Casamento', 'Relacionamento sério', 'Amizade', 'Sem pressa, conhecendo'],
+};
 
 // Limite de fotos extras do perfil (fora a foto principal e a capa).
 export const MAX_PROFILE_PHOTOS = 5;
