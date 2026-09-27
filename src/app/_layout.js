@@ -35,7 +35,6 @@ export default function RootLayout() {
                 name="edit-profile"
                 options={{ title: 'Configurações', ...lightHeader }}
               />
-              <Stack.Screen name="filters" options={{ title: 'Filtrar Perfis', ...lightHeader }} />
               <Stack.Screen name="menu/[key]" options={lightHeader} />
             </Stack>
           </RewardedAdProvider>

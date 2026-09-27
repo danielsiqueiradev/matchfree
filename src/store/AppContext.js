@@ -18,7 +18,7 @@ import {
   SECRET_ADMIRERS,
 } from '../data/mock';
 
-const STORAGE_KEY = '@matchfree/state/v4';
+const STORAGE_KEY = '@matchfree/state/v5';
 
 const initialState = {
   hydrated: false,
@@ -120,6 +120,9 @@ function reducer(state, action) {
         authProvider: action.provider,
         user: { ...state.user, ...(action.user || {}) },
       };
+
+    case 'LOGOUT':
+      return { ...state, onboarded: false, authProvider: null };
 
     case 'UPDATE_USER':
       return { ...state, user: { ...state.user, ...action.payload } };
@@ -231,6 +234,7 @@ export function AppProvider({ children }) {
       spendCoin: () => dispatch({ type: 'SPEND_COIN' }),
       sendMessage,
       login: (provider, user) => dispatch({ type: 'LOGIN', provider, user }),
+      logout: () => dispatch({ type: 'LOGOUT' }),
       updateUser: (payload) => dispatch({ type: 'UPDATE_USER', payload }),
       updatePreferences: (payload) => dispatch({ type: 'UPDATE_PREFERENCES', payload }),
       reset: () => dispatch({ type: 'RESET' }),

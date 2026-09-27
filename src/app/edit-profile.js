@@ -94,6 +94,33 @@ export default function EditProfileScreen() {
             onChangeText={(location) => app.updateUser({ location })}
           />
 
+          <Text style={styles.label}>Igreja / Denominação</Text>
+          <TextInput
+            style={styles.input}
+            value={app.user.church}
+            onChangeText={(church) => app.updateUser({ church })}
+            placeholder="Ex.: Assembleia de Deus"
+            placeholderTextColor={light.textMuted}
+          />
+
+          <Text style={styles.label}>Versículo favorito</Text>
+          <TextInput
+            style={styles.input}
+            value={app.user.verse}
+            onChangeText={(verse) => app.updateUser({ verse })}
+            placeholder="Ex.: Provérbios 3:5-6"
+            placeholderTextColor={light.textMuted}
+          />
+
+          <Text style={styles.label}>Ministério</Text>
+          <TextInput
+            style={styles.input}
+            value={app.user.ministry}
+            onChangeText={(ministry) => app.updateUser({ ministry })}
+            placeholder="Ex.: Louvor, Kids, Missões"
+            placeholderTextColor={light.textMuted}
+          />
+
           <Text style={styles.label}>Bio</Text>
           <TextInput
             style={[styles.input, styles.inputMultiline]}

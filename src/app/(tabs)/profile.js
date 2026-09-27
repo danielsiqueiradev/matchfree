@@ -6,7 +6,6 @@ import { light, radius, spacing } from '../../theme';
 
 const MENU_ITEMS = [
   { key: 'settings', icon: '⚙️', label: 'Configurações', route: '/edit-profile' },
-  { key: 'filters', icon: '🔻', label: 'Filtrar Perfis', route: '/filters' },
   { key: 'premium', icon: '🏅', label: 'Benefícios Premium', route: '/menu/premium' },
   { key: 'share', icon: '🔗', label: 'Compartilhar o Aplicativo', route: '/menu/share' },
   { key: 'support', icon: '💬', label: 'Fale Conosco / Suporte', route: '/menu/support' },
@@ -16,6 +15,29 @@ const MENU_ITEMS = [
   { key: 'terms', icon: '📄', label: 'Termos e Condições', route: '/menu/terms' },
   { key: 'privacy', icon: '📃', label: 'Política de Privacidade', route: '/menu/privacy' },
 ];
+
+function GenderSwitch({ showMen, showWomen, onSelect }) {
+  const options = [
+    { key: 'M', label: 'Homens', icon: '👨' },
+    { key: 'F', label: 'Mulheres', icon: '👩' },
+  ];
+  const selected = showMen ? 'M' : 'F';
+  return (
+    <View style={styles.segmented}>
+      {options.map((opt) => (
+        <Pressable
+          key={opt.key}
+          style={[styles.segment, selected === opt.key && styles.segmentActive]}
+          onPress={() => onSelect(opt.key)}
+        >
+          <Text style={[styles.segmentText, selected === opt.key && styles.segmentTextActive]}>
+            {opt.icon} {opt.label}
+          </Text>
+        </Pressable>
+      ))}
+    </View>
+  );
+}
 
 function Stat({ label, value }) {
   return (
@@ -42,6 +64,13 @@ export default function OptionsScreen() {
               {app.user.name}, {app.user.age}
             </Text>
             <Text style={styles.location}>📍 {app.user.location}</Text>
+            {(app.user.church || app.user.verse || app.user.ministry) && (
+              <Text style={styles.churchLine}>
+                ⛪ {app.user.church}
+                {app.user.ministry ? ` · 🙌 ${app.user.ministry}` : ''}
+                {app.user.verse ? ` · 📖 ${app.user.verse}` : ''}
+              </Text>
+            )}
 
             <View style={styles.divider} />
             <View style={styles.statsRow}>
@@ -78,6 +107,17 @@ export default function OptionsScreen() {
           </View>
         </View>
 
+        <Text style={styles.sectionLabel}>Quero conhecer</Text>
+        <View style={[styles.card, styles.segmentedCard]}>
+          <GenderSwitch
+            showMen={app.preferences.showMen}
+            showWomen={app.preferences.showWomen}
+            onSelect={(g) =>
+              app.updatePreferences({ showMen: g === 'M', showWomen: g === 'F' })
+            }
+          />
+        </View>
+
         <View style={[styles.card, { padding: 0, marginTop: spacing(2) }]}>
           {MENU_ITEMS.map((item, index) => (
             <Pressable
@@ -91,6 +131,14 @@ export default function OptionsScreen() {
             </Pressable>
           ))}
         </View>
+
+        <Pressable style={styles.editProfileBtn} onPress={() => router.push('/edit-profile')}>
+          <Text style={styles.editProfileBtnText}>✏️ EDITAR MEU PERFIL</Text>
+        </Pressable>
+
+        <Pressable style={styles.logoutBtn} onPress={app.logout}>
+          <Text style={styles.logoutText}>Sair</Text>
+        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );
@@ -152,6 +200,34 @@ const styles = StyleSheet.create({
   name: { color: light.text, fontSize: 22, fontWeight: '900', textAlign: 'center' },
   location: { color: light.textMuted, textAlign: 'center', marginTop: 2, fontSize: 13 },
   divider: { height: 1, backgroundColor: light.border, marginVertical: spacing(1.5) },
+  churchLine: { color: light.textMuted, textAlign: 'center', marginTop: 6, fontSize: 12 },
+  sectionLabel: {
+    color: light.text,
+    fontWeight: '900',
+    fontSize: 14,
+    marginTop: spacing(3),
+    marginBottom: spacing(1),
+  },
+  segmentedCard: { padding: 6 },
+  segmented: { flexDirection: 'row', backgroundColor: light.bg, borderRadius: radius.lg },
+  segment: { flex: 1, paddingVertical: 12, alignItems: 'center', borderRadius: radius.lg },
+  segmentActive: { backgroundColor: light.accent },
+  segmentText: { color: light.textMuted, fontWeight: '800', fontSize: 14 },
+  segmentTextActive: { color: '#fff' },
+  editProfileBtn: {
+    marginTop: spacing(3),
+    backgroundColor: light.accent,
+    borderRadius: radius.lg,
+    paddingVertical: 15,
+    alignItems: 'center',
+  },
+  editProfileBtnText: { color: '#fff', fontWeight: '900' },
+  logoutBtn: { alignItems: 'center', marginTop: spacing(2.5), paddingBottom: spacing(3) },
+  logoutText: {
+    color: light.textMuted,
+    fontWeight: '700',
+    textDecorationLine: 'underline',
+  },
   statsRow: { flexDirection: 'row' },
   stat: { flex: 1, alignItems: 'center' },
   statLabel: { color: light.textMuted, fontSize: 13 },

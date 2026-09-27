@@ -4,6 +4,9 @@ export const CURRENT_USER = {
   age: 38,
   gender: 'M',
   location: 'Maricá, Rio de Janeiro',
+  church: 'Igreja Batista Central',
+  verse: 'Provérbios 3:5-6',
+  ministry: 'Louvor',
   bio: 'Servo de Deus. Curto culto aos domingos, café com amigos e um bom louvor. Buscando alguém para caminhar junto em Cristo.',
   photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500',
   coverPhoto: 'https://images.unsplash.com/photo-1499744937866-d7e566a20a61?w=900',
@@ -212,7 +215,7 @@ export const DEFAULT_PREFERENCES = {
   minAge: 18,
   maxAge: 40,
   maxDistance: 50,
-  showMen: true,
+  showMen: false,
   showWomen: true,
 };
 

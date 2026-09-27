@@ -13,6 +13,7 @@ export default function DiscoverScreen() {
   const { showRewardedAd } = useRewardedAd();
   const deckRef = useRef(null);
   const [matched, setMatched] = useState(null);
+  const [photoHintDismissed, setPhotoHintDismissed] = useState(false);
 
   const handleSwipe = (profile, direction) => {
     app.swipe(profile, direction);
@@ -56,6 +57,20 @@ export default function DiscoverScreen() {
           </View>
         </View>
       </View>
+
+      {!(app.user.photos || []).length && !photoHintDismissed && (
+        <View style={styles.photoHint}>
+          <Text style={styles.photoHintText}>
+            📸 Perfis com fotos têm muito mais chances de match! Adicione fotos ao seu perfil.
+          </Text>
+          <Pressable onPress={() => router.push('/edit-profile')} style={styles.photoHintBtn}>
+            <Text style={styles.photoHintBtnText}>Adicionar</Text>
+          </Pressable>
+          <Pressable onPress={() => setPhotoHintDismissed(true)} hitSlop={8}>
+            <Text style={styles.photoHintClose}>✕</Text>
+          </Pressable>
+        </View>
+      )}
 
       <View style={styles.deckArea}>
         <SwipeDeck
@@ -143,6 +158,27 @@ const styles = StyleSheet.create({
   pillActive: { borderColor: colors.accent },
   pillText: { color: colors.text, fontWeight: '800', fontSize: 12 },
   deckArea: { flex: 1, paddingHorizontal: spacing(2), paddingBottom: spacing(1) },
+  photoHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.cardAlt,
+    borderWidth: 1,
+    borderColor: colors.accent,
+    borderRadius: radius.md,
+    marginHorizontal: spacing(2),
+    paddingVertical: 10,
+    paddingHorizontal: spacing(1.5),
+    gap: spacing(1),
+  },
+  photoHintText: { color: colors.text, fontSize: 12, flex: 1 },
+  photoHintBtn: {
+    backgroundColor: colors.primary,
+    borderRadius: radius.sm,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+  },
+  photoHintBtnText: { color: '#fff', fontWeight: '800', fontSize: 12 },
+  photoHintClose: { color: colors.textMuted, fontSize: 14, padding: 4 },
   hint: { color: colors.textMuted, textAlign: 'center', fontSize: 12, marginBottom: spacing(1) },
   actions: {
     flexDirection: 'row',
